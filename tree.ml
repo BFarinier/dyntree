@@ -6,9 +6,6 @@ type ('a,'b) tree =
       ('a,'b) tree * ('a,'b) tree *
       ('a,'b) tree * ('a,'b) tree
 
-let get = function
-  | Node(b,a0,a1,a2,a3,_,_,_,_)
-  | Leaf(b,a0,a1,a2,a3) -> b,a0,a1,a2,a3
 
 let bloom f t =
   match t with
@@ -66,14 +63,7 @@ let rec iter f t =
   | Leaf(b,a0,a1,a2,a3) ->
     f (b,a0,a1,a2,a3)
 
-(*
-type ('a,'b) s =
-  'b *
-  'a option * 'a option * 'a option * 'a option *
-  'a option * 'a * 'a * 'a option *
-  'a option * 'a * 'a * 'a option *
-  'a option * 'a option * 'a option * 'a option
-*)
+
 
 type ('a,'b) chunk = 'b * 'a * 'a * 'a * 'a
 type ('a,'b) t =
@@ -91,15 +81,7 @@ let create c0 c1 c2 c3 f =
    (c2,bloom f (pack c2)),
    (c3,bloom f (pack c3)))
 
-(*
- * (o00,o01,o02,o03,
- *  o10,t11,t12,o13,
- *  o20,t21,t22,o23,
- *  o30,o31,o32,o33)
-*)
-
 let move_upward
-    ?(equal: ('a,'b) chunk -> ('a,'b) chunk -> bool = (=))
     (f: ('a,'b) chunk -> ('a,'b) chunk)
     (g,((k2,t2) as c2),((k3,t3) as c3),_,_): ('a,'b) t =
   let k0 = f k2 in
@@ -107,7 +89,6 @@ let move_upward
   (g,(k0,bloom g (pack k0)),(k1,bloom g (pack k1)),c2,c3)
 
 let move_downward
-    ?(equal: ('a,'b) chunk -> ('a,'b) chunk -> bool = (=))
     (f: ('a,'b) chunk -> ('a,'b) chunk)
     (g,_,_,((k0,t0) as c0),((k1,t1) as c1)): ('a,'b) t =
   let k2 = f k0 in
@@ -115,7 +96,6 @@ let move_downward
   (g,c0,c1,(k2,bloom g (pack k2)),(k3,bloom g (pack k3)))
 
 let move_leftward
-    ?(equal: ('a,'b) chunk -> ('a,'b) chunk -> bool = (=))
     (f: ('a,'b) chunk -> ('a,'b) chunk)
     (g,((k1,t1) as c1),_,((k3,t3) as c3),_): ('a,'b) t =
   let k0 = f k1 in
@@ -123,7 +103,6 @@ let move_leftward
   (g,(k0,bloom g (pack k0)),c1,(k2,bloom g (pack k2)),c3)
 
 let move_rightward
-    ?(equal: ('a,'b) chunk -> ('a,'b) chunk -> bool = (=))
     (f: ('a,'b) chunk -> ('a,'b) chunk)
     (g,_,((k0,t0) as c0),_,((k2,t2) as c2)): ('a,'b) t =
   let k1 = f k0 in
