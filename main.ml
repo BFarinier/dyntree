@@ -100,7 +100,7 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
     (i01,m02,i03,m04,
      p11,i12,p12,i14,
      i21,m22,i23,m24,
-     p21,i23,p22,i34) in
+     p21,i32,p22,i34) in
   let pts2 =
     (i10,p11,i12,p12,
      m20,i21,m22,i23,
@@ -138,10 +138,10 @@ let compute (x,y) =
     (fun (h: header) ->
        let size = h.sqr.size in
        h.base < size
-       && x + size/2 >= h.sqr.x
-       && x - size/2 <= h.sqr.x + size
-       && y + size/2 >= h.sqr.y
-       && y - size/2 <= h.sqr.y + size)
+       && x + size >= h.sqr.x
+       && x - size <= h.sqr.x + size
+       && y + size >= h.sqr.y
+       && y - size <= h.sqr.y + size)
 
 let iter f =
   Tree.iter
