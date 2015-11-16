@@ -148,10 +148,18 @@ let iter f =
     (fun (b,a0,a1,a2,a3) ->
        f a0; f a1; f a2; f a3)
 
+let rec sleep t =
+  if t > 0. then
+    let now = Unix.gettimeofday () in
+    (try ignore (Unix.select [] [] [] t) with
+     | _ -> ());
+    sleep (t -. ((Unix.gettimeofday ()) -. now))
+
 let () =
   Random.self_init ();
   let open Graphics in
   open_graph "";
+  auto_synchronize false;
 
   let center
       (_,_,_,_,
@@ -169,11 +177,10 @@ let () =
   in
 
   let rec loop (t: (content,header) Tree.t) =
-    auto_synchronize false;
-    let s = wait_next_event [Poll] in
-    let t = compute (s.mouse_x,s.mouse_y) t in
+    let t = compute (mouse_pos ()) t in
     iter fill t;
-    auto_synchronize true;
+    synchronize ();
+    sleep 0.1;
     loop t
   in
   loop (create 512 1
