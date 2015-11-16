@@ -27,12 +27,16 @@ val move_rightward :
   (('a,'b) chunk -> ('a,'b) chunk) ->
   ('a,'b) t -> ('a,'b) t
 
+val compute :
+  ('b -> bool) ->
+  ('a,'b) t -> ('a,'b) t
+
 val map :
-  ('a -> 'c) ->  ('b -> 'd) ->
+  (('a,'b) chunk -> ('c,'d) chunk) ->
   ('d -> 'c -> ('c,'d) chunk) ->
   ('a,'b) t -> ('c,'d) t
 
 val iter :
-  ('a -> unit) ->  ('b -> unit) ->
+  (('a,'b) chunk -> unit) ->
   ('a,'b) t -> unit
 

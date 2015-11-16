@@ -131,3 +131,11 @@ let create size base seed lim red =
   let c2 = generate h { seed; pts; lim; red; sqr=s2 } in
   let c3 = generate h { seed; pts; lim; red; sqr=s3 } in
   Tree.create c0 c1 c2 c3 generate
+
+let compute (x,y) =
+  Tree.compute
+    (fun h ->
+       x >= h.sqr.x &&
+       x <= h.sqr.x + h.sqr.size &&
+       y >= h.sqr.y &&
+       y <= h.sqr.y + h.sqr.size)

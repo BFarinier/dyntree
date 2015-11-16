@@ -45,25 +45,26 @@ let rec grow f g t =
       grow f g (bloom f t)
     else t
 
-let rec map f g t =
+let rec map f t =
   match t with
   | Node(b,a0,a1,a2,a3,t0,t1,t2,t3) ->
+    let b,a0,a1,a2,a3 = f (b,a0,a1,a2,a3) in
     Node
-      (g b, f a0, f a1, f a2, f a3,
-       map f g t0, map f g t1,
-       map f g t2, map f g t3)
+      (b,a0,a1,a2,a3,
+       map f t0, map f t1,
+       map f t2, map f t3)
   | Leaf(b,a0,a1,a2,a3) ->
-    Leaf
-      (g b, f a0, f a1, f a2, f a3)
+    let b,a0,a1,a2,a3 = f (b,a0,a1,a2,a3) in
+    Leaf(b,a0,a1,a2,a3)
 
-let rec iter f g t =
+let rec iter f t =
   match t with
   | Node(b,a0,a1,a2,a3,t0,t1,t2,t3) ->
-    g b; f a0; f a1; f a2; f a3;
-    iter f g t0; iter f g t1;
-    iter f g t2; iter f g t3
+    f (b,a0,a1,a2,a3);
+    iter f t0; iter f t1;
+    iter f t2; iter f t3
   | Leaf(b,a0,a1,a2,a3) ->
-    g b; f a0; f a1; f a2; f a3
+    f (b,a0,a1,a2,a3)
 
 (*
 type ('a,'b) s =
@@ -129,17 +130,22 @@ let move_rightward
   let k3 = f k2 in
   (g,c0,(k1,bloom g (pack k1)),c2,(k3,bloom g (pack k3)))
 
-let map f g ((b,a0,a1,a2,a3),t) =
-  (g b, f a0, f a1, f a2, f a3),
-  map f g t
+let compute g ((f,(k0,t0),(k1,t1),(k2,t2),(k3,t3)): ('a,'b) t) =
+  (f,
+   (k0, grow f g t0),
+   (k1, grow f g t1),
+   (k2, grow f g t2),
+   (k3, grow f g t3))
 
-let map f g h ((_,c0,c1,c2,c3): ('a,'b) t): ('c,'d) t =
-  (h,
-   map f g c0, map f g c1,
-   map f g c2, map f g c3)
+let map f h ((_,(k0,t0),(k1,t1),(k2,t2),(k3,t3)): ('a,'b) t): ('c,'d) t =
+  h,
+  (f k0, map f t0),
+  (f k1, map f t1),
+  (f k2, map f t2),
+  (f k3, map f t3)
 
-let iter f g ((_,c0,c1,c2,c3): ('a,'b) t): unit =
-  iter f g (snd c0);
-  iter f g (snd c1);
-  iter f g (snd c2);
-  iter f g (snd c3)
+let iter f ((_,c0,c1,c2,c3): ('a,'b) t): unit =
+  iter f (snd c0);
+  iter f (snd c1);
+  iter f (snd c2);
+  iter f (snd c3)
