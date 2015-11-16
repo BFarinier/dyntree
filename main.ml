@@ -1,13 +1,14 @@
 type square = { x: int; y: int; size: int }
-type header = { sqr: square; base: int } 
-type content =
+type header =
   { seed: int;
-    sqr: square;
+    sqr: square; base: int;
+    lim: float; red: float -> float } 
+type content =
+  { sqr: square;
     pts: int * int * int * int *
          int * int * int * int *
          int * int * int * int *
-         int * int * int * int;
-    lim: float; red: float -> float }
+         int * int * int * int }
 
 
 let split square =
@@ -16,10 +17,10 @@ let split square =
   let y0 = square.y in
   let x1 = x0 + size in
   let y1 = y0 + size in
-  { x=x0; y=y0; size },
-  { x=x1; y=y0; size },
   { x=x0; y=y1; size },
-  { x=x1; y=y1; size }
+  { x=x1; y=y1; size },
+  { x=x0; y=y0; size },
+  { x=x1; y=y0; size }
 
 
 let average i0 i1 i2 i3 =
@@ -32,8 +33,8 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let x = c.sqr.x in
   let y = c.sqr.y in
   let size = c.sqr.size in
-  let lim = truncate c.lim in
-  let flim = c.red c.lim in
+  let lim = max 1 (truncate h.lim) in
+  let flim = h.red h.lim in
   let
     p00,p01,p02,p03,
     p10,p11,p12,p13,
@@ -41,15 +42,15 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
     p30,p31,p32,p33
     = c.pts in
 
-  let m00 = rand c.seed (x - size / 2)     (y + size * 3 / 2) in
-  let m02 = rand c.seed (x + size / 2)     (y + size * 3 / 2) in
-  let m04 = rand c.seed (x + size * 3 / 2) (y + size * 3 / 2) in
-  let m20 = rand c.seed (x - size / 2)     (y + size * 2) in
-  let m22 = rand c.seed (x + size / 2)     (y + size * 2) in
-  let m24 = rand c.seed (x + size * 3 / 2) (y + size * 2) in
-  let m40 = rand c.seed (x - size / 2)     (y - size * 2) in
-  let m42 = rand c.seed (x + size / 2)     (y - size * 2) in
-  let m44 = rand c.seed (x + size * 3 / 2) (y - size * 2) in
+  let m00 = rand h.seed (x - size / 2)     (y + size * 3 / 2) in
+  let m02 = rand h.seed (x + size / 2)     (y + size * 3 / 2) in
+  let m04 = rand h.seed (x + size * 3 / 2) (y + size * 3 / 2) in
+  let m20 = rand h.seed (x - size / 2)     (y + size * 2) in
+  let m22 = rand h.seed (x + size / 2)     (y + size * 2) in
+  let m24 = rand h.seed (x + size * 3 / 2) (y + size * 2) in
+  let m40 = rand h.seed (x - size / 2)     (y - size * 2) in
+  let m42 = rand h.seed (x + size / 2)     (y - size * 2) in
+  let m44 = rand h.seed (x + size * 3 / 2) (y - size * 2) in
 
   let m00 = average p00 p01 p10 p11 + (m00 mod lim) in
   let m02 = average p01 p02 p11 p12 + (m02 mod lim) in
@@ -61,21 +62,21 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let m42 = average p21 p22 p31 p32 + (m42 mod lim) in
   let m44 = average p22 p23 p32 p33 + (m44 mod lim) in
 
-  let lim = truncate flim in
-  let flim = c.red flim in
+  let lim = max 1 (truncate flim) in
+  let flim = h.red flim in
 
-  let i01 = rand c.seed  x                 (y + size * 3 / 2) in
-  let i03 = rand c.seed (x + size)         (y + size * 3 / 2) in
-  let i10 = rand c.seed (x - size / 2)     (y + size) in
-  let i12 = rand c.seed (x + size / 2)     (y + size) in
-  let i14 = rand c.seed (x + size * 3 / 2) (y + size) in
-  let i21 = rand c.seed  x                 (y + size / 2) in
-  let i23 = rand c.seed (x + size)         (y + size / 2) in
-  let i30 = rand c.seed (x - size / 2)      y in
-  let i32 = rand c.seed (x + size / 2)      y in
-  let i34 = rand c.seed (x + size * 3 / 2)  y in
-  let i41 = rand c.seed  x                 (y - size / 2) in
-  let i43 = rand c.seed (x + size)         (y - size / 2) in
+  let i01 = rand h.seed  x                 (y + size * 3 / 2) in
+  let i03 = rand h.seed (x + size)         (y + size * 3 / 2) in
+  let i10 = rand h.seed (x - size / 2)     (y + size) in
+  let i12 = rand h.seed (x + size / 2)     (y + size) in
+  let i14 = rand h.seed (x + size * 3 / 2) (y + size) in
+  let i21 = rand h.seed  x                 (y + size / 2) in
+  let i23 = rand h.seed (x + size)         (y + size / 2) in
+  let i30 = rand h.seed (x - size / 2)      y in
+  let i32 = rand h.seed (x + size / 2)      y in
+  let i34 = rand h.seed (x + size * 3 / 2)  y in
+  let i41 = rand h.seed  x                 (y - size / 2) in
+  let i43 = rand h.seed (x + size)         (y - size / 2) in
 
   let i01 = average p01 m00 m02 p11 + (i01 mod lim) in
   let i03 = average p02 m02 m04 p12 + (i03 mod lim) in
@@ -112,11 +113,11 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
      i41,m42,i43,m44) in
 
   let s0,s1,s2,s3 = split c.sqr in
-  let c0 = { c with sqr = s0; pts = pts0; lim = flim } in
-  let c1 = { c with sqr = s1; pts = pts1; lim = flim } in
-  let c2 = { c with sqr = s2; pts = pts2; lim = flim } in
-  let c3 = { c with sqr = s3; pts = pts3; lim = flim } in
-  let h = { h with sqr = c.sqr} in
+  let c0 = { sqr = s0; pts = pts0 } in
+  let c1 = { sqr = s1; pts = pts1 } in
+  let c2 = { sqr = s2; pts = pts2 } in
+  let c3 = { sqr = s3; pts = pts3 } in
+  let h = { h with sqr = c.sqr; lim = flim } in
   h, c0, c1, c2, c3
 
 let create size base seed lim red =
@@ -125,17 +126,56 @@ let create size base seed lim red =
   let s2 = { x = -size; y = -size; size } in
   let s3 = { x = 0; y = -size; size } in
   let pts = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 in
-  let h = { base; sqr={ x=(-size); y=(-size); size=2*size } } in
-  let c0 = generate h { seed; pts; lim; red; sqr=s0 } in
-  let c1 = generate h { seed; pts; lim; red; sqr=s1 } in
-  let c2 = generate h { seed; pts; lim; red; sqr=s2 } in
-  let c3 = generate h { seed; pts; lim; red; sqr=s3 } in
+  let h = { seed; base; sqr={ x=(-size); y=(-size); size=2*size }; lim; red } in
+  let c0 = generate h { pts; sqr=s0 } in
+  let c1 = generate h { pts; sqr=s1 } in
+  let c2 = generate h { pts; sqr=s2 } in
+  let c3 = generate h { pts; sqr=s3 } in
   Tree.create c0 c1 c2 c3 generate
 
 let compute (x,y) =
   Tree.compute
-    (fun h ->
-       x >= h.sqr.x &&
-       x <= h.sqr.x + h.sqr.size &&
-       y >= h.sqr.y &&
-       y <= h.sqr.y + h.sqr.size)
+    (fun (h: header) ->
+       let size = h.sqr.size in
+       h.base < size
+       && x + size/2 >= h.sqr.x
+       && x - size/2 <= h.sqr.x + size
+       && y + size/2 >= h.sqr.y
+       && y - size/2 <= h.sqr.y + size)
+
+let iter f =
+  Tree.iter
+    (fun (b,a0,a1,a2,a3) ->
+       f a0; f a1; f a2; f a3)
+
+let () =
+  Random.self_init ();
+  let open Graphics in
+  open_graph "";
+
+  let center
+      (_,_,_,_,
+       _,a0,a1,_,
+       _,a2,a3,_,
+       _,_,_,_) =
+    a0,a1,a2,a3
+  in
+
+  let fill c =
+    let a0,a1,a2,a3 = center c.pts in
+    let v = 255 - average a0 a1 a2 a3 in
+    set_color (rgb v v v);
+    fill_rect c.sqr.x c.sqr.y c.sqr.size c.sqr.size
+  in
+
+  let rec loop (t: (content,header) Tree.t) =
+    auto_synchronize false;
+    let s = wait_next_event [Poll] in
+    let t = compute (s.mouse_x,s.mouse_y) t in
+    iter fill t;
+    auto_synchronize true;
+    loop t
+  in
+  loop (create 512 1
+          (Random.int (1 lsl 30 - 1))
+          256. (fun f -> f /. 2.))

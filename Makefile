@@ -1,5 +1,5 @@
 all:
-	ocamlbuild main.native
+	ocamlbuild -package graphics main.native
 
 clean:
 	ocamlbuild -clean
