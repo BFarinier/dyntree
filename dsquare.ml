@@ -1,8 +1,12 @@
-type square = { x: int; y: int; size: int }
+type square =
+  { x: int; y: int; size: int }
+type noise =
+  { min: float; max: float; cur: float;
+    next: float -> float; pred: float -> float }
 type header =
-  { seed: int;
-    sqr: square; base: int;
-    lim: float; red: float -> float } 
+  { seed: int; sqr: square;
+    max_size: int; min_size: int;
+    noise: noise } 
 type content =
   { sqr: square;
     pts: int * int * int * int *
@@ -10,6 +14,17 @@ type content =
          int * int * int * int *
          int * int * int * int }
 
+let next v =
+  let cur = v.next v.cur in
+  if v.min < cur && v.max > cur
+  then { v with cur }
+  else v
+
+let pred v =
+  let cur = v.pred v.cur in
+  if v.min < cur && v.max > cur
+  then { v with cur }
+  else v
 
 let split square =
   let size = square.size / 2 in
@@ -33,8 +48,8 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let x = c.sqr.x in
   let y = c.sqr.y in
   let size = c.sqr.size in
-  let lim = max 1 (truncate h.lim) in
-  let flim = h.red h.lim in
+  let lim = truncate h.noise.cur in
+  let noise = next h.noise in
   let
     p00,p01,p02,p03,
     p10,p11,p12,p13,
@@ -62,8 +77,8 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let m42 = average p21 p22 p31 p32 + (m42 mod lim) in
   let m44 = average p22 p23 p32 p33 + (m44 mod lim) in
 
-  let lim = max 1 (truncate flim) in
-  let flim = h.red flim in
+  let lim = truncate noise.cur in
+  let noise = next noise in
 
   let i01 = rand h.seed  x                 (y + size * 3 / 2) in
   let i03 = rand h.seed (x + size)         (y + size * 3 / 2) in
@@ -117,16 +132,19 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let c1 = { sqr = s1; pts = pts1 } in
   let c2 = { sqr = s2; pts = pts2 } in
   let c3 = { sqr = s3; pts = pts3 } in
-  let h = { h with sqr = c.sqr; lim = flim } in
+  let h = { h with sqr = c.sqr; noise } in
   h, c0, c1, c2, c3
 
-let create size base seed lim red =
+let create ~seed ~max ~min noise =
+  let size = max in
   let s0 = { x = -size; y = 0; size } in
   let s1 = { x = 0; y = 0; size } in
   let s2 = { x = -size; y = -size; size } in
   let s3 = { x = 0; y = -size; size } in
   let pts = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 in
-  let h = { seed; base; sqr={ x=(-size); y=(-size); size=2*size }; lim; red } in
+  let h =
+    { seed; max_size=max; min_size=min; noise;
+      sqr={ x=(-size); y=(-size); size=2*size }} in
   let c0 = generate h { pts; sqr=s0 } in
   let c1 = generate h { pts; sqr=s1 } in
   let c2 = generate h { pts; sqr=s2 } in
@@ -136,12 +154,12 @@ let create size base seed lim red =
 let compute ~pos:(x,y) =
   Tree.compute
     (fun (h: header) ->
+       let hx = h.sqr.x in
+       let hy = h.sqr.y in
        let size = h.sqr.size in
-       h.base < size
-       && x + size >= h.sqr.x
-       && x - size <= h.sqr.x + size
-       && y + size >= h.sqr.y
-       && y - size <= h.sqr.y + size)
+       h.min_size < size
+       && x + size >= hx && x - size <= hx + size
+       && y + size >= hy && y - size <= hy + size)
 
 let iter f =
   Tree.iter

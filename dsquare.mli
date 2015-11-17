@@ -1,25 +1,23 @@
-type square = { x : int; y : int; size : int; }
-
-type header = {
-  seed : int;
-  sqr : square;
-  base : int;
-  lim : float;
-  red : float -> float;
-}
-
-type content = {
-  sqr : square;
-  pts :
-    int * int * int * int *
-    int * int * int * int *
-    int * int * int * int *
-    int * int * int * int;
-}
+type square =
+  { x : int; y : int; size : int; }
+type noise =
+  { min : float; max : float; cur : float;
+    next : float -> float; pred : float -> float }
+type header =
+  { seed : int; sqr : square;
+    max_size : int; min_size : int;
+    noise : noise }
+type content =
+  { sqr : square;
+    pts :
+      int * int * int * int *
+      int * int * int * int *
+      int * int * int * int *
+      int * int * int * int;
+  }
 
 val create :
-  int -> int -> int ->
-  float -> (float -> float) ->
+  seed:int -> max:int -> min:int -> noise ->
   (content, header) Tree.t
 
 val compute :
@@ -30,3 +28,4 @@ val compute :
 val iter :
   (header -> content -> unit) ->
   (content,header) Tree.t -> unit
+

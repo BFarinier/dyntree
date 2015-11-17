@@ -22,6 +22,7 @@ let fill _ c =
   set_color (rgb v v v);
   fill_rect c.sqr.x c.sqr.y c.sqr.size c.sqr.size
 
+
 let () =
   Random.self_init ();
   open_graph "";
@@ -34,6 +35,14 @@ let () =
     sleep 0.1;
     loop t
   in
-  loop (create 512 1
-          (Random.int (1 lsl 30 - 1))
-          256. (fun f -> f /. 2.))
+
+  let noise =
+    { max = 256.; min = 1.; cur = 256. ;
+      next = (fun f -> f /. 2.);
+      pred = (fun f -> f *. 2.) }
+  in
+
+  loop (create 
+          ~seed:(Random.int (1 lsl 30 - 1))
+          ~max:512 ~min:1
+          noise)
