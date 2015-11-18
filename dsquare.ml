@@ -26,10 +26,10 @@ let split square =
   let y0 = square.y in
   let x1 = x0 + size in
   let y1 = y0 + size in
-  { x=x0; y=y1; size },
-  { x=x1; y=y1; size },
   { x=x0; y=y0; size },
-  { x=x1; y=y0; size }
+  { x=x1; y=y0; size },
+  { x=x0; y=y1; size },
+  { x=x1; y=y1; size }
 
 
 
@@ -41,31 +41,31 @@ let rand s x y = rand (s + x * 5 + y * 17)
 
 let multirand seed x y size =
   let size = size / 2 in
-  let p00 = rand seed (x - size)     (y + 3 * size) in
-  let p01 = rand seed  x             (y + 3 * size) in
-  let p02 = rand seed (x + size)     (y + 3 * size) in
-  let p03 = rand seed (x + 2 * size) (y + 3 * size) in
-  let p04 = rand seed (x + 3 * size) (y + 3 * size) in
-  let p10 = rand seed (x - size)     (y + 2 * size) in
-  let p11 = rand seed  x             (y + 2 * size) in
-  let p12 = rand seed (x + size)     (y + 2 * size) in
-  let p13 = rand seed (x + 2 * size) (y + 2 * size) in
-  let p14 = rand seed (x + 3 * size) (y + 2 * size) in
+  let p00 = rand seed (x - size)     (y - size) in
+  let p01 = rand seed  x             (y - size) in
+  let p02 = rand seed (x + size)     (y - size) in
+  let p03 = rand seed (x + 2 * size) (y - size) in
+  let p04 = rand seed (x + 3 * size) (y - size) in
+  let p10 = rand seed (x - size)      y in
+  let p11 = rand seed  x              y in
+  let p12 = rand seed (x + size)      y in
+  let p13 = rand seed (x + 2 * size)  y in
+  let p14 = rand seed (x + 3 * size)  y in
   let p20 = rand seed (x - size)     (y + size) in
   let p21 = rand seed  x             (y + size) in
   let p22 = rand seed (x + size)     (y + size) in
   let p23 = rand seed (x + 2 * size) (y + size) in
   let p24 = rand seed (x + 3 * size) (y + size) in
-  let p30 = rand seed (x - size)      y in
-  let p31 = rand seed  x              y in
-  let p32 = rand seed (x + size)      y in
-  let p33 = rand seed (x + 2 * size)  y in
-  let p34 = rand seed (x + 3 * size)  y in
-  let p40 = rand seed (x - size)     (y - size) in
-  let p41 = rand seed  x             (y - size) in
-  let p42 = rand seed (x + size)     (y - size) in
-  let p43 = rand seed (x + 2 * size) (y - size) in
-  let p44 = rand seed (x + 3 * size) (y - size) in
+  let p30 = rand seed (x - size)     (y + 2 * size) in
+  let p31 = rand seed  x             (y + 2 * size) in
+  let p32 = rand seed (x + size)     (y + 2 * size) in
+  let p33 = rand seed (x + 2 * size) (y + 2 * size) in
+  let p34 = rand seed (x + 3 * size) (y + 2 * size) in
+  let p40 = rand seed (x - size)     (y + 3 * size) in
+  let p41 = rand seed  x             (y + 3 * size) in
+  let p42 = rand seed (x + size)     (y + 3 * size) in
+  let p43 = rand seed (x + 2 * size) (y + 3 * size) in
+  let p44 = rand seed (x + 3 * size) (y + 3 * size) in
   p00,p01,p02,p03,p04,
   p10,p11,p12,p13,p14,
   p20,p21,p22,p23,p24,
@@ -203,7 +203,7 @@ let create ~seed ~max ~min noise =
 let move_upward =
   Tree.move_upward
     (fun ((h:header),c0,c1,c2,c3) ->
-       let sqr = { h.sqr with y = h.sqr.y + h.sqr.size } in
+       let sqr = { h.sqr with y = h.sqr.y - h.sqr.size } in
        let s0,s1,s2,s3 = split sqr in
        let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
        let h = { h with sqr } in
@@ -216,7 +216,7 @@ let move_upward =
 let move_downward =
   Tree.move_downward
     (fun ((h:header),c0,c1,c2,c3) ->
-       let sqr = { h.sqr with y = h.sqr.y - h.sqr.size } in
+       let sqr = { h.sqr with y = h.sqr.y + h.sqr.size } in
        let s0,s1,s2,s3 = split sqr in
        let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
        let h = { h with sqr } in
