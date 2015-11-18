@@ -22,20 +22,20 @@ val create :
 
 
 val move_upward :
-  ((content, header) Tree.chunk, header) Tree.t ->
-  ((content, header) Tree.chunk, header) Tree.t
+  (content, header) Tree.t ->
+  (content, header) Tree.t
 
 val move_downward :
-  ((content, header) Tree.chunk, header) Tree.t ->
-  ((content, header) Tree.chunk, header) Tree.t
+  (content, header) Tree.t ->
+  (content, header) Tree.t
 
 val move_leftward :
-  ((content, header) Tree.chunk, header) Tree.t ->
-  ((content, header) Tree.chunk, header) Tree.t
+  (content, header) Tree.t ->
+  (content, header) Tree.t
 
 val move_rightward :
-  ((content, header) Tree.chunk, header) Tree.t ->
-  ((content, header) Tree.chunk, header) Tree.t
+  (content, header) Tree.t ->
+  (content, header) Tree.t
 
 
 val compute :

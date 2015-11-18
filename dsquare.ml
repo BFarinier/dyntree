@@ -200,57 +200,39 @@ let create ~seed ~max ~min noise =
   Tree.create c0 c1 c2 c3 generate
 
 
-let move_upward =
-  Tree.move_upward
-    (fun ((h:header),c0,c1,c2,c3) ->
-       let sqr = { h.sqr with y = h.sqr.y - h.sqr.size } in
+let combine h sqr = 
        let s0,s1,s2,s3 = split sqr in
        let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
        let h = { h with sqr } in
-       let c0 = generate h { pts=pts0; sqr=s0 } in
-       let c1 = generate h { pts=pts1; sqr=s1 } in
-       let c2 = generate h { pts=pts2; sqr=s2 } in
-       let c3 = generate h { pts=pts3; sqr=s3 } in
-       h,c0,c1,c2,c3)
+       let c0 = { pts=pts0; sqr=s0 } in
+       let c1 = { pts=pts1; sqr=s1 } in
+       let c2 = { pts=pts2; sqr=s2 } in
+       let c3 = { pts=pts3; sqr=s3 } in
+       h,c0,c1,c2,c3
+
+let move_upward =
+  Tree.move_upward
+    (fun ((h:header),_,_,_,_) ->
+       let sqr = { h.sqr with y = h.sqr.y - h.sqr.size } in
+       combine h sqr)
 
 let move_downward =
   Tree.move_downward
-    (fun ((h:header),c0,c1,c2,c3) ->
+    (fun ((h:header),_,_,_,_) ->
        let sqr = { h.sqr with y = h.sqr.y + h.sqr.size } in
-       let s0,s1,s2,s3 = split sqr in
-       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
-       let h = { h with sqr } in
-       let c0 = generate h { pts=pts0; sqr=s0 } in
-       let c1 = generate h { pts=pts1; sqr=s1 } in
-       let c2 = generate h { pts=pts2; sqr=s2 } in
-       let c3 = generate h { pts=pts3; sqr=s3 } in
-       h,c0,c1,c2,c3)
+       combine h sqr)
 
 let move_leftward =
   Tree.move_leftward
-    (fun ((h:header),c0,c1,c2,c3) ->
+    (fun ((h:header),_,_,_,_) ->
        let sqr = { h.sqr with x = h.sqr.x - h.sqr.size } in
-       let s0,s1,s2,s3 = split sqr in
-       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
-       let h = { h with sqr } in
-       let c0 = generate h { pts=pts0; sqr=s0 } in
-       let c1 = generate h { pts=pts1; sqr=s1 } in
-       let c2 = generate h { pts=pts2; sqr=s2 } in
-       let c3 = generate h { pts=pts3; sqr=s3 } in
-       h,c0,c1,c2,c3)
+       combine h sqr)
 
 let move_rightward =
   Tree.move_rightward
-    (fun ((h:header),c0,c1,c2,c3) ->
+    (fun ((h:header),_,_,_,_) ->
        let sqr = { h.sqr with x = h.sqr.x + h.sqr.size } in
-       let s0,s1,s2,s3 = split sqr in
-       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
-       let h = { h with sqr } in
-       let c0 = generate h { pts=pts0; sqr=s0 } in
-       let c1 = generate h { pts=pts1; sqr=s1 } in
-       let c2 = generate h { pts=pts2; sqr=s2 } in
-       let c3 = generate h { pts=pts3; sqr=s3 } in
-       h,c0,c1,c2,c3)
+       combine h sqr)
 
 
 let compute ~pos:(x,y) =
