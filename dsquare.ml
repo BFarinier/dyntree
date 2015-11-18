@@ -14,6 +14,7 @@ type content =
          int * int * int * int *
          int * int * int * int }
 
+
 let attenuate v =
   let cur = v.attenuate v in
   { v with cur }
@@ -29,6 +30,7 @@ let split square =
   { x=x1; y=y1; size },
   { x=x0; y=y0; size },
   { x=x1; y=y0; size }
+
 
 
 let average i0 i1 i2 i3 =
@@ -81,6 +83,8 @@ let map25 f
   f p20,f p21,f p22,f p23,f p24,
   f p30,f p31,f p32,f p33,f p34,
   f p40,f p41,f p42,f p43,f p44
+
+
 
 
 let generate (h: header) (c: content) : (content,header) Tree.chunk =
@@ -156,45 +160,98 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let h = { h with sqr = c.sqr; noise } in
   h, c0, c1, c2, c3
 
+
+
+let pts seed sqr noise =
+  let p00,p01,p02,p03,p04,
+      p10,p11,p12,p13,p14,
+      p20,p21,p22,p23,p24,
+      p30,p31,p32,p33,p34,
+      p40,p41,p42,p43,p44
+    = map25
+      (fun i -> i mod (truncate noise.cur))
+      (multirand seed sqr.x sqr.y sqr.size) in
+  (p00,p01,p02,p03,
+   p10,p11,p12,p13,
+   p20,p21,p22,p23,
+   p30,p31,p32,p33),
+  (p01,p02,p03,p04,
+   p11,p12,p13,p14,
+   p21,p22,p23,p24,
+   p31,p32,p33,p34),
+  (p10,p11,p12,p13,
+   p20,p21,p22,p23,
+   p30,p31,p32,p33,
+   p40,p41,p42,p43),
+  (p11,p12,p13,p14,
+   p21,p22,p23,p24,
+   p31,p32,p33,p34,
+   p41,p42,p43,p44)
+
 let create ~seed ~max ~min noise =
-  let size = max in
-  let s0 = { x = -size; y = 0; size } in
-  let s1 = { x = 0; y = 0; size } in
-  let s2 = { x = -size; y = -size; size } in
-  let s3 = { x = 0; y = -size; size } in
-  let pts0,pts1,pts2,pts3 =
-    let p00,p01,p02,p03,p04,
-        p10,p11,p12,p13,p14,
-        p20,p21,p22,p23,p24,
-        p30,p31,p32,p33,p34,
-        p40,p41,p42,p43,p44
-      = map25
-        (fun i -> i mod (truncate noise.cur))
-        (multirand seed (-size) (-size) (2*size)) in
-    (p00,p01,p02,p03,
-     p10,p11,p12,p13,
-     p20,p21,p22,p23,
-     p30,p31,p32,p33),
-    (p01,p02,p03,p04,
-     p11,p12,p13,p14,
-     p21,p22,p23,p24,
-     p31,p32,p33,p34),
-    (p10,p11,p12,p13,
-     p20,p21,p22,p23,
-     p30,p31,p32,p33,
-     p40,p41,p42,p43),
-    (p11,p12,p13,p14,
-     p21,p22,p23,p24,
-     p31,p32,p33,p34,
-     p41,p42,p43,p44) in
-  let h =
-    { seed; max_size=max; min_size=min; noise;
-      sqr={ x=(-size); y=(-size); size=2*size }} in
+  let sqr = { x=(-max); y=(-max); size=2*max } in
+  let s0,s1,s2,s3 = split sqr in
+  let pts0,pts1,pts2,pts3 = pts seed sqr noise in
+  let h = { seed; max_size=max; min_size=min; noise; sqr } in
   let c0 = generate h { pts=pts0; sqr=s0 } in
   let c1 = generate h { pts=pts1; sqr=s1 } in
   let c2 = generate h { pts=pts2; sqr=s2 } in
   let c3 = generate h { pts=pts3; sqr=s3 } in
   Tree.create c0 c1 c2 c3 generate
+
+
+let move_upward =
+  Tree.move_upward
+    (fun ((h:header),c0,c1,c2,c3) ->
+       let sqr = { h.sqr with y = h.sqr.y + h.sqr.size } in
+       let s0,s1,s2,s3 = split sqr in
+       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
+       let h = { h with sqr } in
+       let c0 = generate h { pts=pts0; sqr=s0 } in
+       let c1 = generate h { pts=pts1; sqr=s1 } in
+       let c2 = generate h { pts=pts2; sqr=s2 } in
+       let c3 = generate h { pts=pts3; sqr=s3 } in
+       h,c0,c1,c2,c3)
+
+let move_downward =
+  Tree.move_downward
+    (fun ((h:header),c0,c1,c2,c3) ->
+       let sqr = { h.sqr with y = h.sqr.y - h.sqr.size } in
+       let s0,s1,s2,s3 = split sqr in
+       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
+       let h = { h with sqr } in
+       let c0 = generate h { pts=pts0; sqr=s0 } in
+       let c1 = generate h { pts=pts1; sqr=s1 } in
+       let c2 = generate h { pts=pts2; sqr=s2 } in
+       let c3 = generate h { pts=pts3; sqr=s3 } in
+       h,c0,c1,c2,c3)
+
+let move_leftward =
+  Tree.move_leftward
+    (fun ((h:header),c0,c1,c2,c3) ->
+       let sqr = { h.sqr with x = h.sqr.x - h.sqr.size } in
+       let s0,s1,s2,s3 = split sqr in
+       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
+       let h = { h with sqr } in
+       let c0 = generate h { pts=pts0; sqr=s0 } in
+       let c1 = generate h { pts=pts1; sqr=s1 } in
+       let c2 = generate h { pts=pts2; sqr=s2 } in
+       let c3 = generate h { pts=pts3; sqr=s3 } in
+       h,c0,c1,c2,c3)
+
+let move_rightward =
+  Tree.move_rightward
+    (fun ((h:header),c0,c1,c2,c3) ->
+       let sqr = { h.sqr with x = h.sqr.x + h.sqr.size } in
+       let s0,s1,s2,s3 = split sqr in
+       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
+       let h = { h with sqr } in
+       let c0 = generate h { pts=pts0; sqr=s0 } in
+       let c1 = generate h { pts=pts1; sqr=s1 } in
+       let c2 = generate h { pts=pts2; sqr=s2 } in
+       let c3 = generate h { pts=pts3; sqr=s3 } in
+       h,c0,c1,c2,c3)
+
 
 let compute ~pos:(x,y) =
   Tree.compute
@@ -208,6 +265,6 @@ let compute ~pos:(x,y) =
 
 let iter f =
   Tree.iter
-    (fun (b,a0,a1,a2,a3) ->
-       f b a0; f b a1; f b a2; f b a3)
+    (fun (h,c0,c1,c2,c3) ->
+       f h c0; f h c1; f h c2; f h c3)
 

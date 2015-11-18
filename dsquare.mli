@@ -20,6 +20,24 @@ val create :
   seed:int -> max:int -> min:int -> noise ->
   (content, header) Tree.t
 
+
+val move_upward :
+  ((content, header) Tree.chunk, header) Tree.t ->
+  ((content, header) Tree.chunk, header) Tree.t
+
+val move_downward :
+  ((content, header) Tree.chunk, header) Tree.t ->
+  ((content, header) Tree.chunk, header) Tree.t
+
+val move_leftward :
+  ((content, header) Tree.chunk, header) Tree.t ->
+  ((content, header) Tree.chunk, header) Tree.t
+
+val move_rightward :
+  ((content, header) Tree.chunk, header) Tree.t ->
+  ((content, header) Tree.chunk, header) Tree.t
+
+
 val compute :
   pos:(int * int) ->
   (content, header) Tree.t ->
