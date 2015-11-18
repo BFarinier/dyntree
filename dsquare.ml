@@ -2,7 +2,7 @@ type square =
   { x: int; y: int; size: int }
 type noise =
   { min: float; max: float; cur: float;
-    next: float -> float; pred: float -> float }
+    attenuate: noise -> float }
 type header =
   { seed: int; sqr: square;
     max_size: int; min_size: int;
@@ -14,17 +14,10 @@ type content =
          int * int * int * int *
          int * int * int * int }
 
-let next v =
-  let cur = v.next v.cur in
-  if v.min < cur && v.max > cur
-  then { v with cur }
-  else v
-
-let pred v =
-  let cur = v.pred v.cur in
-  if v.min < cur && v.max > cur
-  then { v with cur }
-  else v
+let attenuate v =
+  let cur = v.attenuate v in
+  { v with cur }
+ 
 
 let split square =
   let size = square.size / 2 in
@@ -48,14 +41,15 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let x = c.sqr.x in
   let y = c.sqr.y in
   let size = c.sqr.size in
-  let lim = truncate h.noise.cur in
-  let noise = next h.noise in
   let
     p00,p01,p02,p03,
     p10,p11,p12,p13,
     p20,p21,p22,p23,
     p30,p31,p32,p33
     = c.pts in
+
+  let noise = attenuate h.noise in
+  let lim = truncate noise.cur in
 
   let m00 = rand h.seed (x - size / 2)     (y + size * 3 / 2) in
   let m02 = rand h.seed (x + size / 2)     (y + size * 3 / 2) in
@@ -77,8 +71,8 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let m42 = average p21 p22 p31 p32 + (m42 mod lim) in
   let m44 = average p22 p23 p32 p33 + (m44 mod lim) in
 
+  let noise = attenuate noise in
   let lim = truncate noise.cur in
-  let noise = next noise in
 
   let i01 = rand h.seed  x                 (y + size * 3 / 2) in
   let i03 = rand h.seed (x + size)         (y + size * 3 / 2) in

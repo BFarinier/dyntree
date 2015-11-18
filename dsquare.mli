@@ -2,7 +2,7 @@ type square =
   { x : int; y : int; size : int; }
 type noise =
   { min : float; max : float; cur : float;
-    next : float -> float; pred : float -> float }
+    attenuate: noise -> float }
 type header =
   { seed : int; sqr : square;
     max_size : int; min_size : int;

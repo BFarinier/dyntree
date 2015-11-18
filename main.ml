@@ -38,8 +38,7 @@ let () =
 
   let noise =
     { max = 256.; min = 1.; cur = 256. ;
-      next = (fun f -> f /. 2.);
-      pred = (fun f -> f *. 2.) }
+      attenuate = (fun n -> max n.min (n.cur /. 2.)) }
   in
 
   loop (create 
