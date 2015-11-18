@@ -18,7 +18,7 @@ let center
 
 let fill _ c =
   let a0,a1,a2,a3 = center c.pts in
-  let v = 255 - (a0+a1+a2+a3) / 4 in
+  let v = max 0 (255 - (a0+a1+a2+a3) / 4) in
   set_color (rgb v v v);
   fill_rect c.sqr.x c.sqr.y c.sqr.size c.sqr.size
 

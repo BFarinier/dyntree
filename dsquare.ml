@@ -17,7 +17,7 @@ type content =
 let attenuate v =
   let cur = v.attenuate v in
   { v with cur }
- 
+
 
 let split square =
   let size = square.size / 2 in
@@ -37,10 +37,53 @@ let average i0 i1 i2 i3 =
 let rand n = ((n * 1103515245 + 12345) / 66536) mod 32768
 let rand s x y = rand (s + x * 5 + y * 17)
 
+let multirand seed x y size =
+  let size = size / 2 in
+  let p00 = rand seed (x - size)     (y + 3 * size) in
+  let p01 = rand seed  x             (y + 3 * size) in
+  let p02 = rand seed (x + size)     (y + 3 * size) in
+  let p03 = rand seed (x + 2 * size) (y + 3 * size) in
+  let p04 = rand seed (x + 3 * size) (y + 3 * size) in
+  let p10 = rand seed (x - size)     (y + 2 * size) in
+  let p11 = rand seed  x             (y + 2 * size) in
+  let p12 = rand seed (x + size)     (y + 2 * size) in
+  let p13 = rand seed (x + 2 * size) (y + 2 * size) in
+  let p14 = rand seed (x + 3 * size) (y + 2 * size) in
+  let p20 = rand seed (x - size)     (y + size) in
+  let p21 = rand seed  x             (y + size) in
+  let p22 = rand seed (x + size)     (y + size) in
+  let p23 = rand seed (x + 2 * size) (y + size) in
+  let p24 = rand seed (x + 3 * size) (y + size) in
+  let p30 = rand seed (x - size)      y in
+  let p31 = rand seed  x              y in
+  let p32 = rand seed (x + size)      y in
+  let p33 = rand seed (x + 2 * size)  y in
+  let p34 = rand seed (x + 3 * size)  y in
+  let p40 = rand seed (x - size)     (y - size) in
+  let p41 = rand seed  x             (y - size) in
+  let p42 = rand seed (x + size)     (y - size) in
+  let p43 = rand seed (x + 2 * size) (y - size) in
+  let p44 = rand seed (x + 3 * size) (y - size) in
+  p00,p01,p02,p03,p04,
+  p10,p11,p12,p13,p14,
+  p20,p21,p22,p23,p24,
+  p30,p31,p32,p33,p34,
+  p40,p41,p42,p43,p44
+
+let map25 f
+    (p00,p01,p02,p03,p04,
+     p10,p11,p12,p13,p14,
+     p20,p21,p22,p23,p24,
+     p30,p31,p32,p33,p34,
+     p40,p41,p42,p43,p44) =
+  f p00,f p01,f p02,f p03,f p04,
+  f p10,f p11,f p12,f p13,f p14,
+  f p20,f p21,f p22,f p23,f p24,
+  f p30,f p31,f p32,f p33,f p34,
+  f p40,f p41,f p42,f p43,f p44
+
+
 let generate (h: header) (c: content) : (content,header) Tree.chunk =
-  let x = c.sqr.x in
-  let y = c.sqr.y in
-  let size = c.sqr.size in
   let
     p00,p01,p02,p03,
     p10,p11,p12,p13,
@@ -48,18 +91,15 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
     p30,p31,p32,p33
     = c.pts in
 
+  let m00,i01,m02,i03,m04,
+      i10, _ ,i12, _ ,i14,
+      m20,i21,m22,i23,m24,
+      i30, _ ,i32, _ ,i34,
+      m40,i41,m42,i43,m44
+    = multirand h.seed c.sqr.x c.sqr.y c.sqr.size in
+
   let noise = attenuate h.noise in
   let lim = truncate noise.cur in
-
-  let m00 = rand h.seed (x - size / 2)     (y + size * 3 / 2) in
-  let m02 = rand h.seed (x + size / 2)     (y + size * 3 / 2) in
-  let m04 = rand h.seed (x + size * 3 / 2) (y + size * 3 / 2) in
-  let m20 = rand h.seed (x - size / 2)     (y + size * 2) in
-  let m22 = rand h.seed (x + size / 2)     (y + size * 2) in
-  let m24 = rand h.seed (x + size * 3 / 2) (y + size * 2) in
-  let m40 = rand h.seed (x - size / 2)     (y - size * 2) in
-  let m42 = rand h.seed (x + size / 2)     (y - size * 2) in
-  let m44 = rand h.seed (x + size * 3 / 2) (y - size * 2) in
 
   let m00 = average p00 p01 p10 p11 + (m00 mod lim) in
   let m02 = average p01 p02 p11 p12 + (m02 mod lim) in
@@ -73,19 +113,6 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
 
   let noise = attenuate noise in
   let lim = truncate noise.cur in
-
-  let i01 = rand h.seed  x                 (y + size * 3 / 2) in
-  let i03 = rand h.seed (x + size)         (y + size * 3 / 2) in
-  let i10 = rand h.seed (x - size / 2)     (y + size) in
-  let i12 = rand h.seed (x + size / 2)     (y + size) in
-  let i14 = rand h.seed (x + size * 3 / 2) (y + size) in
-  let i21 = rand h.seed  x                 (y + size / 2) in
-  let i23 = rand h.seed (x + size)         (y + size / 2) in
-  let i30 = rand h.seed (x - size / 2)      y in
-  let i32 = rand h.seed (x + size / 2)      y in
-  let i34 = rand h.seed (x + size * 3 / 2)  y in
-  let i41 = rand h.seed  x                 (y - size / 2) in
-  let i43 = rand h.seed (x + size)         (y - size / 2) in
 
   let i01 = average p01 m00 m02 p11 + (i01 mod lim) in
   let i03 = average p02 m02 m04 p12 + (i03 mod lim) in
@@ -135,14 +162,38 @@ let create ~seed ~max ~min noise =
   let s1 = { x = 0; y = 0; size } in
   let s2 = { x = -size; y = -size; size } in
   let s3 = { x = 0; y = -size; size } in
-  let pts = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 in
+  let pts0,pts1,pts2,pts3 =
+    let p00,p01,p02,p03,p04,
+        p10,p11,p12,p13,p14,
+        p20,p21,p22,p23,p24,
+        p30,p31,p32,p33,p34,
+        p40,p41,p42,p43,p44
+      = map25
+        (fun i -> i mod (truncate noise.cur))
+        (multirand seed (-size) (-size) (2*size)) in
+    (p00,p01,p02,p03,
+     p10,p11,p12,p13,
+     p20,p21,p22,p23,
+     p30,p31,p32,p33),
+    (p01,p02,p03,p04,
+     p11,p12,p13,p14,
+     p21,p22,p23,p24,
+     p31,p32,p33,p34),
+    (p10,p11,p12,p13,
+     p20,p21,p22,p23,
+     p30,p31,p32,p33,
+     p40,p41,p42,p43),
+    (p11,p12,p13,p14,
+     p21,p22,p23,p24,
+     p31,p32,p33,p34,
+     p41,p42,p43,p44) in
   let h =
     { seed; max_size=max; min_size=min; noise;
       sqr={ x=(-size); y=(-size); size=2*size }} in
-  let c0 = generate h { pts; sqr=s0 } in
-  let c1 = generate h { pts; sqr=s1 } in
-  let c2 = generate h { pts; sqr=s2 } in
-  let c3 = generate h { pts; sqr=s3 } in
+  let c0 = generate h { pts=pts0; sqr=s0 } in
+  let c1 = generate h { pts=pts1; sqr=s1 } in
+  let c2 = generate h { pts=pts2; sqr=s2 } in
+  let c3 = generate h { pts=pts3; sqr=s3 } in
   Tree.create c0 c1 c2 c3 generate
 
 let compute ~pos:(x,y) =
