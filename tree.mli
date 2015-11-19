@@ -7,6 +7,12 @@ val create :
   ('b -> 'a -> ('a,'b) chunk) ->
   ('a,'b) t
 
+val get :
+  ('a,'b) t ->
+  ('b -> 'a -> ('a,'b) chunk)
+  * ('a,'b) chunk * ('a,'b) chunk
+  * ('a,'b) chunk * ('a,'b) chunk
+
 val move_upward :
   (('a,'b) chunk -> ('a,'b) chunk) ->
   ('a,'b) t -> ('a,'b) t

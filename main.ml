@@ -29,11 +29,36 @@ let () =
   auto_synchronize false;
 
   let rec loop (t: (content,header) Tree.t) =
-    let t = compute (mouse_pos ()) t in
-    iter fill t;
-    synchronize ();
-    sleep 0.1;
-    loop t
+    let sqr =
+      let (_,(h,_,_,_,_),_,_,_) = Tree.get t in
+      let x = h.sqr.x in
+      let y = h.sqr.y in
+      let size = h.sqr.size in
+      { x; y; size = size * 2 }
+    in    
+    let x,y = mouse_pos () in
+    Printf.printf
+      "\r%4i,%4i -- %4i,%4i,%4i%!"
+      x y sqr.x sqr.y sqr.size;
+    if y < sqr.y then
+      loop (move_upward t)
+    else
+    if y > sqr.y + sqr.size then
+      loop (move_downward t)
+    else
+    if x < sqr.x then
+      loop (move_leftward t)
+    else
+    if x > sqr.x + sqr.size then
+      loop (move_rightward t)
+    else (
+      let t = compute (x,y) t in
+      clear_graph();
+      iter fill t;
+      synchronize ();
+      sleep 0.1;
+      loop t
+    )
   in
 
   let noise =

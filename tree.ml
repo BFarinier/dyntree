@@ -109,6 +109,8 @@ let move_rightward
   let k3 = f k2 in
   (g,c0,(k1,bloom g (pack k1)),c2,(k3,bloom g (pack k3)))
 
+let get (f,(k0,_),(k1,_),(k2,_),(k3,_)) = f,k0,k1,k2,k3
+
 let compute g ((f,(k0,t0),(k1,t1),(k2,t2),(k3,t3)): ('a,'b) t) =
   (f,
    (k0, grow f g t0),

@@ -201,14 +201,12 @@ let create ~seed ~max ~min noise =
 
 
 let combine h sqr = 
-       let s0,s1,s2,s3 = split sqr in
-       let pts0,pts1,pts2,pts3 = pts h.seed sqr h.noise in
-       let h = { h with sqr } in
-       let c0 = { pts=pts0; sqr=s0 } in
-       let c1 = { pts=pts1; sqr=s1 } in
-       let c2 = { pts=pts2; sqr=s2 } in
-       let c3 = { pts=pts3; sqr=s3 } in
-       h,c0,c1,c2,c3
+  let sqr = { sqr with size = 2 * sqr.size } in
+  let noise = { h.noise with cur = h.noise.max } in
+  let h = { h with sqr; noise } in
+  let pts,_,_,_ = pts h.seed sqr noise in
+  let sqr,_,_,_ = split sqr in
+  generate h { pts; sqr }
 
 let move_upward =
   Tree.move_upward
