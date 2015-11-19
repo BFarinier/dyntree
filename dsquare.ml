@@ -112,31 +112,31 @@ let generate (h: header) (c: content) : (content,header) Tree.chunk =
   let noise = attenuate h.noise in
   let lim = truncate noise.cur in
 
-  let m00 = average p00 p01 p10 p11 + (m00 mod lim) in
-  let m02 = average p01 p02 p11 p12 + (m02 mod lim) in
-  let m04 = average p02 p03 p12 p13 + (m04 mod lim) in
-  let m20 = average p10 p11 p20 p21 + (m20 mod lim) in
-  let m22 = average p11 p12 p21 p22 + (m22 mod lim) in
-  let m24 = average p12 p13 p22 p23 + (m24 mod lim) in
-  let m40 = average p20 p21 p30 p31 + (m40 mod lim) in
-  let m42 = average p21 p22 p31 p32 + (m42 mod lim) in
-  let m44 = average p22 p23 p32 p33 + (m44 mod lim) in
+  let m00 = average p00 p01 p10 p11 + (m00 mod lim) - lim / 2 in
+  let m02 = average p01 p02 p11 p12 + (m02 mod lim) - lim / 2 in
+  let m04 = average p02 p03 p12 p13 + (m04 mod lim) - lim / 2 in
+  let m20 = average p10 p11 p20 p21 + (m20 mod lim) - lim / 2 in
+  let m22 = average p11 p12 p21 p22 + (m22 mod lim) - lim / 2 in
+  let m24 = average p12 p13 p22 p23 + (m24 mod lim) - lim / 2 in
+  let m40 = average p20 p21 p30 p31 + (m40 mod lim) - lim / 2 in
+  let m42 = average p21 p22 p31 p32 + (m42 mod lim) - lim / 2 in
+  let m44 = average p22 p23 p32 p33 + (m44 mod lim) - lim / 2 in
 
   let noise = attenuate noise in
   let lim = truncate noise.cur in
 
-  let i01 = average p01 m00 m02 p11 + (i01 mod lim) in
-  let i03 = average p02 m02 m04 p12 + (i03 mod lim) in
-  let i10 = average m00 p10 p11 m20 + (i10 mod lim) in
-  let i12 = average m02 p11 p12 m22 + (i12 mod lim) in
-  let i14 = average m04 p12 p13 m24 + (i14 mod lim) in
-  let i21 = average p11 m20 m22 p21 + (i21 mod lim) in
-  let i23 = average p12 m22 m24 p22 + (i23 mod lim) in
-  let i30 = average m20 p20 p21 m40 + (i30 mod lim) in
-  let i32 = average m22 p21 p22 m42 + (i32 mod lim) in
-  let i34 = average m24 p22 p23 m44 + (i34 mod lim) in
-  let i41 = average p21 m40 m42 p22 + (i41 mod lim) in
-  let i43 = average p22 m42 m44 p32 + (i43 mod lim) in
+  let i01 = average p01 m00 m02 p11 + (i01 mod lim) - lim / 2 in
+  let i03 = average p02 m02 m04 p12 + (i03 mod lim) - lim / 2 in
+  let i10 = average m00 p10 p11 m20 + (i10 mod lim) - lim / 2 in
+  let i12 = average m02 p11 p12 m22 + (i12 mod lim) - lim / 2 in
+  let i14 = average m04 p12 p13 m24 + (i14 mod lim) - lim / 2 in
+  let i21 = average p11 m20 m22 p21 + (i21 mod lim) - lim / 2 in
+  let i23 = average p12 m22 m24 p22 + (i23 mod lim) - lim / 2 in
+  let i30 = average m20 p20 p21 m40 + (i30 mod lim) - lim / 2 in
+  let i32 = average m22 p21 p22 m42 + (i32 mod lim) - lim / 2 in
+  let i34 = average m24 p22 p23 m44 + (i34 mod lim) - lim / 2 in
+  let i41 = average p21 m40 m42 p22 + (i41 mod lim) - lim / 2 in
+  let i43 = average p22 m42 m44 p32 + (i43 mod lim) - lim / 2 in
 
   let pts0 =
     (m00,i01,m02,i03,
@@ -176,7 +176,9 @@ let pts seed sqr noise =
       p30,p31,p32,p33,p34,
       p40,p41,p42,p43,p44
     = map25
-      (fun i -> i mod (truncate noise.cur))
+      (fun i ->
+         let lim = truncate noise.cur in
+         (i mod lim) - lim / 2)
       (multirand seed sqr.x sqr.y sqr.size) in
   (p00,p01,p02,p03,
    p10,p11,p12,p13,

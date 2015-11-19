@@ -16,10 +16,18 @@ let center
      _,_,_,_) =
   a0,a1,a2,a3
 
-let fill _ c =
+
+let color x l =
+  let v = min 255 (truncate (255. *. (1. -. exp (-2. *. (abs_float x) /. l)))) in
+  if x < 0. then
+    rgb 255 (255 - v) (255 - v)
+  else
+    rgb (255 - v) (255 - v) 255
+
+let fill l _ c =
   let a0,a1,a2,a3 = center c.pts in
-  let v = max 0 (255 - (a0+a1+a2+a3) / 4) in
-  set_color (rgb v v v);
+  let col = color (float ((a0+a1+a2+a3) / 4)) l in
+  set_color col;
   fill_rect c.sqr.x c.sqr.y c.sqr.size c.sqr.size
 
 
@@ -29,12 +37,12 @@ let () =
   auto_synchronize false;
 
   let rec loop (t: (content,header) Tree.t) =
-    let sqr =
+    let noise,sqr =
       let (_,(h,_,_,_,_),_,_,_) = Tree.get t in
       let x = h.sqr.x in
       let y = h.sqr.y in
       let size = h.sqr.size in
-      { x; y; size = size * 2 }
+      h.noise,{ x; y; size = size * 2 }
     in    
     let x,y = mouse_pos () in
     Printf.printf
@@ -54,7 +62,7 @@ let () =
     else (
       let t = compute (x,y) t in
       clear_graph();
-      iter fill t;
+      iter (fill noise.max) t;
       synchronize ();
       sleep 0.1;
       loop t
@@ -62,7 +70,7 @@ let () =
   in
 
   let noise =
-    { max = 256.; min = 1.; cur = 256. ;
+    { max = 16384.; min = 1.; cur = 16384. ;
       attenuate = (fun n -> max n.min (n.cur /. 2.)) }
   in
 
