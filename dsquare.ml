@@ -36,8 +36,15 @@ let split square =
 let average i0 i1 i2 i3 =
   (i0+i1+i2+i3) / 4
 
-let rand n = ((n * 1103515245 + 12345) / 66536) mod 32768
-let rand s x y = rand (s + x * 5 + y * 17)
+let rand =
+  let rand n = ((n * 1103515245 + 12345) / 66536) mod 32768 in
+  let proj =
+    let f i = if i < 0 then -(i * 2 + 1) else i * 2 in
+    let g x y = (x + y) * (x + y + 1) / 2 + y in
+    fun x y -> g (f x) (f y)
+  in
+  fun s x y -> rand (s + proj x y)
+
 
 let multirand seed x y size =
   let size = size / 2 in
