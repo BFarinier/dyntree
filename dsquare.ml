@@ -37,7 +37,7 @@ let average i0 i1 i2 i3 =
   (i0+i1+i2+i3) / 4
 
 let rand =
-  let rand n = ((n * 1103515245 + 12345) / 66536) mod 32768 in
+  let rand n = n * 1103515245 + 12345 in
   let proj =
     let f i = if i < 0 then -(i * 2 + 1) else i * 2 in
     let g x y = (x + y) * (x + y + 1) / 2 + y in

@@ -18,7 +18,7 @@ let center
 
 
 let color x l =
-  let v = min 255 (truncate (255. *. (1. -. exp (-2. *. (abs_float x) /. l)))) in
+  let v = truncate (255. *. (1. -. exp (-2. *. (abs_float x) /. l))) in
   if x < 0. then
     rgb 255 (255 - v) (255 - v)
   else
@@ -70,7 +70,7 @@ let () =
   in
 
   let noise =
-    { max = 16384.; min = 1.; cur = 16384. ;
+    { max = 65536.; min = 1.; cur = 65536. ;
       attenuate = (fun n -> max n.min (n.cur /. 2.)) }
   in
 
